@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="StaticEcgView">
+        <!--電子報告背景設定模式-->
+        <attr name="background_text_padding" format="enum">
+          <enum name="Enable" value="1" />
+          <enum name="Disable" value="0" />
+        </attr>
+        <attr name="background_text_sp" format="enum">
+          <enum name="FOUR_SP" value="0" />
+          <enum name="SIX_SP" value="1" />
+          <enum name="EIGHT_SP" value="2" />
+          <enum name="TEN_SP" value="3" />
+          <enum name="TWELVE_SP" value="4" />
+        </attr>
+        <attr name="background_small_grid_enable" format="enum">
+          <enum name="Enable" value="1" />
+          <enum name="Disable" value="0" />
+        </attr>
+        <attr name="background_draw_mode" format="enum">
+            <enum name="WHITE" value="0" />
+            <enum name="BLACK" value="1" />
+        </attr>
+        <attr name="gain" format="enum">
+          <enum name="GAIN_I" value="0" />
+          <enum name="GAIN_II" value="1" />
+          <enum name="GAIN_III" value="2" />
+          <enum name="GAIN_IV" value="3" />
+        </attr>
+        <attr name="lead_name" format="string" />
+      <attr name="scroll_enable" format="enum">
+        <enum name="Enable" value="1" />
+        <enum name="Disable" value="0" />
+      </attr>
+      <attr name="wave_ecg_format" format="enum">
+        <enum name="ONE_TWELVE" value="0" />
+        <enum name="TWO_SIX" value="1" />
+        <enum name="THREE_FOUR_R" value="2" />
+        <enum name="THREE_FOUR_R_FOCUS" value="3" />
+      </attr>
+      <attr name="wave_ecg_orientation" format="enum">
+        <enum name="Landscape" value="2" />
+        <enum name="Portrait" value="1" />
+      </attr>
+      <attr name="wave_ecg_lead" format="enum">
+        <enum name="Lead_I" value="0" />
+        <enum name="Lead_II" value="1" />
+        <enum name="Lead_III" value="2" />
+        <enum name="Lead_AVR" value="3" />
+        <enum name="Lead_AVL" value="4" />
+        <enum name="Lead_AVF" value="5" />
+        <enum name="Lead_V1" value="6" />
+        <enum name="Lead_V2" value="7" />
+        <enum name="Lead_V3" value="8" />
+        <enum name="Lead_V4" value="9" />
+        <enum name="Lead_V5" value="10" />
+        <enum name="Lead_V6" value="11" />
+      </attr>
+    </declare-styleable>
+</resources>
