@@ -59,8 +59,6 @@ class FloatWindowsActivity : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        //The screen height and width are calculated, cause
-        //the height and width of the floating window is set depending on this
 
         //The screen height and width are calculated, cause
         //the height and width of the floating window is set depending on this
@@ -70,16 +68,12 @@ class FloatWindowsActivity : Service() {
 
         //To obtain a WindowManager of a different Display,
         //we need a Context for that display, so WINDOW_SERVICE is used
-
-        //To obtain a WindowManager of a different Display,
-        //we need a Context for that display, so WINDOW_SERVICE is used
         windowMag = getSystemService(WINDOW_SERVICE) as WindowManager
 
         //A LayoutInflater instance is created to retrieve the LayoutInflater for the floating_layout xml
 
         //A LayoutInflater instance is created to retrieve the LayoutInflater for the floating_layout xml
         val inflater = baseContext.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        //inflate a new view hierarchy from the floating_layout xml
         //inflate a new view hierarchy from the floating_layout xml
         floatView = inflater.inflate(R.layout.floating_layout, null) as ViewGroup
 
@@ -94,10 +88,6 @@ class FloatWindowsActivity : Service() {
         etv_description!!.setText(description)
         etv_description!!.setSelection(description.length)
         etv_description!!.setCursorVisible(false)
-
-
-        //WindowManager.LayoutParams takes a lot of parameters to set the
-        //the parameters of the layout. One of them is Layout_type.
 
         //WindowManager.LayoutParams takes a lot of parameters to set the
         //the parameters of the layout. One of them is Layout_type.
@@ -119,15 +109,6 @@ class FloatWindowsActivity : Service() {
         //problem with this flag is key inputs can't be given to the EditText.
         //This problem is solved later.
         //5) Next parameter is Layout_Format. System chooses a format that supports translucency by PixelFormat.TRANSLUCENT
-
-        //Now the Parameter of the floating-window layout is set.
-        //1) The Width of the window will be 55% of the phone width.
-        //2) The Height of the window will be 58% of the phone height.
-        //3) Layout_Type is already set.
-        //4) Next Parameter is Window_Flag. Here FLAG_NOT_FOCUSABLE is used. But
-        //problem with this flag is key inputs can't be given to the EditText.
-        //This problem is solved later.
-        //5) Next parameter is Layout_Format. System chooses a format that supports translucency by PixelFormat.TRANSLUCENT
         floatWindowLayoutParam = WindowManager.LayoutParams(
             (width * 0.55f).toInt(), (height * 0.58f).toInt(),
             LAYOUT_TYPE,
@@ -138,12 +119,8 @@ class FloatWindowsActivity : Service() {
         //The Gravity of the Floating Window is set. The Window will appear in the center of the screen
         floatWindowLayoutParam!!.gravity = Gravity.CENTER
         //X and Y value of the window is set
-        //X and Y value of the window is set
         floatWindowLayoutParam!!.x = 0
         floatWindowLayoutParam!!.y = 0
-
-        //The ViewGroup that inflates the floating_layout.xml is
-        //added to the WindowManager with all the parameters
 
         //The ViewGroup that inflates the floating_layout.xml is
         //added to the WindowManager with all the parameters
@@ -158,9 +135,6 @@ class FloatWindowsActivity : Service() {
             override fun afterTextChanged(s: Editable) {
             }
         })
-
-        //Floating Window Layout Flag is set to FLAG_NOT_FOCUSABLE, so no input is possible to the EditText. But that's a problem.
-        //So, the problem is solved here. The Layout Flag is changed when the EditText is touched.
 
         //Floating Window Layout Flag is set to FLAG_NOT_FOCUSABLE, so no input is possible to the EditText. But that's a problem.
         //So, the problem is solved here. The Layout Flag is changed when the EditText is touched.
@@ -191,21 +165,11 @@ class FloatWindowsActivity : Service() {
 
             //stopSelf() method is used to stop the service if
             //it was previously started
-
-            //stopSelf() method is used to stop the service if
-            //it was previously started
             stopSelf()
-            //The window is removed from the screen
             //The window is removed from the screen
             windowMag!!.removeView(floatView)
             //The app will maximize again. So the MainActivity class will be called again.
-            //The app will maximize again. So the MainActivity class will be called again.
             val backToHome = Intent(this@FloatWindowsActivity, MainActivity::class.java)
-            //1) FLAG_ACTIVITY_NEW_TASK flag helps activity to start a new task on the history stack.
-            //If a task is already running like the floating window service, a new activity will not be started.
-            //Instead the task will be brought back to the front just like the MainActivity here
-            //2) FLAG_ACTIVITY_CLEAR_TASK can be used in the conjunction with FLAG_ACTIVITY_NEW_TASK. This flag will
-            //kill the existing task first and then new activity is started.
             //1) FLAG_ACTIVITY_NEW_TASK flag helps activity to start a new task on the history stack.
             //If a task is already running like the floating window service, a new activity will not be started.
             //Instead the task will be brought back to the front just like the MainActivity here
@@ -215,9 +179,6 @@ class FloatWindowsActivity : Service() {
             startActivity(backToHome)
 
         }
-
-        //Another feature of the floating window is, the window is movable.
-        //The window can be moved at any position on the screen.
 
         //Another feature of the floating window is, the window is movable.
         //The window can be moved at any position on the screen.

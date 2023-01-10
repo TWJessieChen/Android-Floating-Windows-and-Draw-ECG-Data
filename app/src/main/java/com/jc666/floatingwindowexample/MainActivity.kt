@@ -55,12 +55,9 @@ class MainActivity : AppCompatActivity() {
         //If the app is started again while the floating window service is running
         //then the floating window service will stop
         if (isMyServiceRunning()) {
-            //onDestroy() method in FloatingWindowGFG class will be called here
+            //onDestroy() method in FloatWindowsActivity class will be called here
             stopService(Intent(this@MainActivity, FloatWindowsActivity::class.java))
         }
-
-        //currentDesc String will be empty at first time launch
-        //but the text written in floating window will not gone
 
         //currentDesc String will be empty at first time launch
         //but the text written in floating window will not gone
@@ -92,7 +89,7 @@ class MainActivity : AppCompatActivity() {
 
                 //First it confirms whether the 'Display over other apps' permission in given
                 if (checkOverlayDisplayPermission()) {
-                    //FloatingWindowGFG service is started
+                    //FloatWindowsActivity service is started
                     startService(Intent(this@MainActivity, FloatWindowsActivity::class.java))
                     //The MainActivity closes here
                     finish()
