@@ -14,6 +14,7 @@ import com.jc666.floatingwindowexample.view.ConstContent.KEY_ECG_VIEW_ONE_TWELVE
 import com.jc666.floatingwindowexample.view.ConstContent.KEY_ECG_VIEW_TWO_SIX_TAG
 import com.jc666.floatingwindowexample.view.ConstContent.ORIENTATION_LANDSCAPE
 import com.jc666.floatingwindowexample.view.ConstContent.ORIENTATION_PORTRAIT
+import kotlin.math.sqrt
 
 
 /**
@@ -38,22 +39,22 @@ class StaticECGBackgroundRenderer(context: Context,
     private val TAG = this.javaClass.simpleName
 
     //行與行之間的畫筆(大網格)
-    private var rowPaint : Paint? = null
+    private lateinit var rowPaint : Paint
 
     //網格畫筆(小網格)
-    private var cellPaint  : Paint? = null
+    private lateinit var cellPaint  : Paint
 
     //網格畫點畫筆
-    private var pointPaint : Paint? = null
+    private lateinit var pointPaint : Paint
 
     //專門寫每個Lead名稱畫筆
-    private var labelTextPaint : Paint? = null
+    private lateinit var labelTextPaint : Paint
 
     //專門寫每個Lead單位名稱畫筆
-    private var labelUnitTextPaint : Paint? = null
+    private lateinit var labelUnitTextPaint : Paint
 
     //專門畫每個Lead起始位置的柱狀條畫筆
-    private var labelLeadPaint : Paint? = null
+    private lateinit var labelLeadPaint : Paint
 
     private var leadName = "Error"
 
@@ -67,19 +68,19 @@ class StaticECGBackgroundRenderer(context: Context,
 
     private var textPaddingEnable:Boolean = false
 
-    protected var mDensity: Float
-    protected var mScaleDensity: Float
-    protected var mDisplayMetrics: DisplayMetrics
+    private var density: Float
+    private var scaleDensity: Float
+    private var displayMetrics: DisplayMetrics
 
     /**
      * 小網格寬高
      */
-    private var SMALL_GRID_WIDTH = 6
+    private var smallGridWidth = 6
 
     /**
      * 大網格寬高
      */
-    private var BIG_GRID_WIDTH = 30
+    private var bigGridWidth = 30
 
     /**
      * 網隔名稱文字大小
@@ -93,7 +94,7 @@ class StaticECGBackgroundRenderer(context: Context,
 
     private var ecgFormatTypeTag = KEY_ECG_VIEW_ONE_TWELVE_TAG
 
-    private var ORIENTATION: Int = 2
+    private var orientation: Int = 2
 
     fun draw(canvas: Canvas) {
         Log.d(TAG, "width: " + width + " height: " + height)
@@ -110,15 +111,15 @@ class StaticECGBackgroundRenderer(context: Context,
 //            SMALL_GRID_WIDTH = 2
 //        }
 
-        gridHorizontalNum = (height / BIG_GRID_WIDTH)
-        gridVerticalNum = (width / BIG_GRID_WIDTH)
-        gridHorizontalSmallNum = (height / SMALL_GRID_WIDTH)
-        gridVerticalSmallNum = (width / SMALL_GRID_WIDTH)
+        gridHorizontalNum = (height / bigGridWidth)
+        gridVerticalNum = (width / bigGridWidth)
+        gridHorizontalSmallNum = (height / smallGridWidth)
+        gridVerticalSmallNum = (width / smallGridWidth)
 
         var startBigX = if(gridHorizontalNum % 2 == 0) {
-            (height - (gridHorizontalNum * BIG_GRID_WIDTH)) / 2
+            (height - (gridHorizontalNum * bigGridWidth)) / 2
         } else {
-            (height - (gridHorizontalNum * BIG_GRID_WIDTH)) * 2
+            (height - (gridHorizontalNum * bigGridWidth)) * 2
         }
 
 //        Log.d(TAG, "startBigX: " + startBigX)
@@ -139,17 +140,17 @@ class StaticECGBackgroundRenderer(context: Context,
                 //起始點位置
                 drawStartPoint(canvas,startBigX)
 
-                if(ORIENTATION == ORIENTATION_LANDSCAPE) {
+                if(orientation == ORIENTATION_LANDSCAPE) {
                     //Lead name
-                    drawLabelText(canvas, ((BIG_GRID_WIDTH/5)*2).toFloat(), (startBigX + BIG_GRID_WIDTH/3).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, ((bigGridWidth/5)*2).toFloat(), (startBigX + bigGridWidth/3).toFloat(), leadName, true)
                     //Unit
-                    drawLabelUnit(canvas, (((BIG_GRID_WIDTH/5)*2 + 2) + BIG_GRID_WIDTH/5).toFloat(), (((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH).toFloat(), gainValue)
-                } else if(ORIENTATION == ORIENTATION_PORTRAIT) {
+                    drawPaddingORNotPaddingATLabelUnit(canvas, (((bigGridWidth/5)*2 + 2) + bigGridWidth/5).toFloat(), (((gridHorizontalNum/2) + 2) * bigGridWidth).toFloat(), gainValue, true)
+                } else if(orientation == ORIENTATION_PORTRAIT) {
                     startBigX = (startBigX/2)/2
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/4).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/4).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 3) * BIG_GRID_WIDTH).toFloat(), gainValue)
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 3) * bigGridWidth).toFloat(), gainValue, false)
                 }
             }
             KEY_ECG_VIEW_TWO_SIX_TAG -> {
@@ -161,17 +162,17 @@ class StaticECGBackgroundRenderer(context: Context,
                 //起始點位置
                 drawStartPoint(canvas,startBigX)
 
-                if(ORIENTATION == ORIENTATION_LANDSCAPE) {
+                if(orientation == ORIENTATION_LANDSCAPE) {
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/4).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/4).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, ((((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH)).toFloat(), gainValue)
-                } else if(ORIENTATION == ORIENTATION_PORTRAIT) {
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, ((((gridHorizontalNum/2) + 2) * bigGridWidth)).toFloat(), gainValue, false)
+                } else if(orientation == ORIENTATION_PORTRAIT) {
                     startBigX = (startBigX/2)/2
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/4).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/4).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 3) * BIG_GRID_WIDTH).toFloat(), gainValue)
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 3) * bigGridWidth).toFloat(), gainValue, false)
                 }
             }
             KEY_ECG_VIEW_FOUR_THREE_TAG -> {
@@ -186,16 +187,16 @@ class StaticECGBackgroundRenderer(context: Context,
                 //起始點位置
                 drawStartPoint(canvas,startBigX)
 
-                if(ORIENTATION == ORIENTATION_LANDSCAPE) {
+                if(orientation == ORIENTATION_LANDSCAPE) {
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/4).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/4).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH).toFloat(), gainValue)
-                } else if(ORIENTATION == ORIENTATION_PORTRAIT) {
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * bigGridWidth).toFloat(), gainValue, false)
+                } else if(orientation == ORIENTATION_PORTRAIT) {
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/4).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/4).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH).toFloat(), gainValue)
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * bigGridWidth).toFloat(), gainValue, false)
                 }
             }
             KEY_ECG_VIEW_FOUR_THREE_FOCUS_TAG -> {
@@ -209,16 +210,16 @@ class StaticECGBackgroundRenderer(context: Context,
                 //起始點位置
                 drawStartPoint(canvas,startBigX)
 
-                if(ORIENTATION == ORIENTATION_LANDSCAPE) {
+                if(orientation == ORIENTATION_LANDSCAPE) {
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/5).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/5).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH + 2).toFloat(), gainValue)
-                } else if(ORIENTATION == ORIENTATION_PORTRAIT) {
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * bigGridWidth + 2).toFloat(), gainValue, false)
+                } else if(orientation == ORIENTATION_PORTRAIT) {
                     //Lead name
-                    drawLabelNoPaddingText(canvas, (BIG_GRID_WIDTH/5).toFloat(), (startBigX + BIG_GRID_WIDTH/5).toFloat(), leadName)
+                    drawPaddingORNotPaddingATLabelText(canvas, (bigGridWidth/5).toFloat(), (startBigX + bigGridWidth/5).toFloat(), leadName, false)
                     //Unit
-                    drawLabelNoPaddingUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * BIG_GRID_WIDTH + 2).toFloat(), gainValue)
+                    drawPaddingORNotPaddingATLabelUnit(canvas, 0f, (((gridHorizontalNum/2) + 2) * bigGridWidth + 2).toFloat(), gainValue, false)
                 }
             }
         }
@@ -234,18 +235,18 @@ class StaticECGBackgroundRenderer(context: Context,
         /** 绘制横线  */
         for (i in 0..gridHorizontalNum + 1) {
             canvas.drawLine(
-                0f, startX + (i * BIG_GRID_WIDTH).toFloat(),
-                width.toFloat(), startX + (i * BIG_GRID_WIDTH).toFloat(), rowPaint!!
+                0f, startX + (i * bigGridWidth).toFloat(),
+                width.toFloat(), startX + (i * bigGridWidth).toFloat(), rowPaint
             )
         }
         /** 绘制竖线  */
         for (i in 0..gridVerticalNum + 1) {
             canvas.drawLine(
-                (i * BIG_GRID_WIDTH).toFloat(),
+                (i * bigGridWidth).toFloat(),
                 0f,
-                (i * BIG_GRID_WIDTH).toFloat(),
+                (i * bigGridWidth).toFloat(),
                 height.toFloat(),
-                rowPaint!!
+                rowPaint
             )
         }
     }
@@ -258,14 +259,14 @@ class StaticECGBackgroundRenderer(context: Context,
     private fun drawSmallGrid(canvas: Canvas, startX:Int) {
         //畫橫線
         if(startX > 0) {
-            var count = startX/SMALL_GRID_WIDTH
+            var count = startX/smallGridWidth
             for (j in 0..count) {
                 canvas.drawLine(
                     0f,
-                    (j * SMALL_GRID_WIDTH).toFloat(),
+                    (j * smallGridWidth).toFloat(),
                     width.toFloat(),
-                    (j * SMALL_GRID_WIDTH).toFloat(),
-                    cellPaint!!
+                    (j * smallGridWidth).toFloat(),
+                    cellPaint
                 )
             }
         }
@@ -274,10 +275,10 @@ class StaticECGBackgroundRenderer(context: Context,
             for (j in 0..6) {
                 canvas.drawLine(
                     0f,
-                    ((startX + (i * BIG_GRID_WIDTH)) + (j * SMALL_GRID_WIDTH)).toFloat(),
+                    ((startX + (i * bigGridWidth)) + (j * smallGridWidth)).toFloat(),
                     width.toFloat(),
-                    ((startX + (i * BIG_GRID_WIDTH)) + (j * SMALL_GRID_WIDTH)).toFloat(),
-                    cellPaint!!
+                    ((startX + (i * bigGridWidth)) + (j * smallGridWidth)).toFloat(),
+                    cellPaint
                 )
             }
         }
@@ -290,8 +291,8 @@ class StaticECGBackgroundRenderer(context: Context,
         //畫豎線
         for (i in 0..gridVerticalSmallNum + 1) {
             canvas.drawLine(
-                (i * SMALL_GRID_WIDTH).toFloat(), 0f,
-                (i * SMALL_GRID_WIDTH).toFloat(), height.toFloat(), cellPaint!!
+                (i * smallGridWidth).toFloat(), 0f,
+                (i * smallGridWidth).toFloat(), height.toFloat(), cellPaint
             )
         }
     }
@@ -302,61 +303,50 @@ class StaticECGBackgroundRenderer(context: Context,
      * @param canvas
      */
     private fun drawStartPoint(canvas: Canvas, startX:Int) {
-        /** 繪製起始位置Lead(一條示) */
-//        for (i in BIG_GRID_WIDTH/3 until (BIG_GRID_WIDTH/3)*2) {
-//            canvas.drawLine(
-//                i.toFloat(),
-//                startX + (((gridHorizontalNum/2) - 1) * BIG_GRID_WIDTH).toFloat(),
-//                i.toFloat(),
-//                startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat(),
-//                labelLeadPaint!!
-//            )
-//        }
-
         /** 繪製起始位置Lead(ㄇ字型示) */
-        for (i in 0 until BIG_GRID_WIDTH/5) {
+        for (i in 0 until bigGridWidth/5) {
             canvas.drawLine(
                 i.toFloat(),
-                (startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat()) - 2,
+                (startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat()) - 2,
                 i.toFloat(),
-                startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat(),
-                labelLeadPaint!!
+                startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat(),
+                labelLeadPaint
             )
         }
-        for (i in BIG_GRID_WIDTH/5 until ((BIG_GRID_WIDTH/5) + 2)) {
+        for (i in bigGridWidth/5 until ((bigGridWidth/5) + 2)) {
             canvas.drawLine(
                 i.toFloat(),
-                (startX + (((gridHorizontalNum/2) - 1) * BIG_GRID_WIDTH).toFloat()) - 2,
+                (startX + (((gridHorizontalNum/2) - 1) * bigGridWidth).toFloat()) - 2,
                 i.toFloat(),
-                startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat(),
-                labelLeadPaint!!
+                startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat(),
+                labelLeadPaint
             )
         }
-        for (i in ((BIG_GRID_WIDTH/5) + 2) until (BIG_GRID_WIDTH/5)*2) {
+        for (i in ((bigGridWidth/5) + 2) until (bigGridWidth/5)*2) {
             canvas.drawLine(
                 i.toFloat(),
-                (startX + (((gridHorizontalNum/2) - 1) * BIG_GRID_WIDTH).toFloat()) - 2,
+                (startX + (((gridHorizontalNum/2) - 1) * bigGridWidth).toFloat()) - 2,
                 i.toFloat(),
-                startX + (((gridHorizontalNum/2) - 1) * BIG_GRID_WIDTH).toFloat(),
-                labelLeadPaint!!
+                startX + (((gridHorizontalNum/2) - 1) * bigGridWidth).toFloat(),
+                labelLeadPaint
             )
         }
-        for (i in (BIG_GRID_WIDTH/5)*2 until ((BIG_GRID_WIDTH/5)*2 + 2)) {
+        for (i in (bigGridWidth/5)*2 until ((bigGridWidth/5)*2 + 2)) {
             canvas.drawLine(
                 i.toFloat(),
-                (startX + (((gridHorizontalNum/2) - 1) * BIG_GRID_WIDTH).toFloat()) - 2,
+                (startX + (((gridHorizontalNum/2) - 1) * bigGridWidth).toFloat()) - 2,
                 i.toFloat(),
-                startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat(),
-                labelLeadPaint!!
+                startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat(),
+                labelLeadPaint
             )
         }
-        for (i in ((BIG_GRID_WIDTH/5)*2 + 2) until ((BIG_GRID_WIDTH/5)*2 + 2) + BIG_GRID_WIDTH/5) {
+        for (i in ((bigGridWidth/5)*2 + 2) until ((bigGridWidth/5)*2 + 2) + bigGridWidth/5) {
             canvas.drawLine(
                 i.toFloat(),
-                (startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat()) - 2,
+                (startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat()) - 2,
                 i.toFloat(),
-                startX + (((gridHorizontalNum/2) + 1) * BIG_GRID_WIDTH).toFloat(),
-                labelLeadPaint!!
+                startX + (((gridHorizontalNum/2) + 1) * bigGridWidth).toFloat(),
+                labelLeadPaint
             )
         }
     }
@@ -366,42 +356,53 @@ class StaticECGBackgroundRenderer(context: Context,
      *
      * @param canvas
      */
-    private fun drawLabelText(canvas: Canvas, left: Float, bottom: Float, text: String) {
-        val padding: Int = ChartUtils.dp2px(mDensity, gridLabelNameSp)
-        val fontMetrics: Paint.FontMetricsInt = labelTextPaint!!.getFontMetricsInt()
-        val startX = left + padding
-        val rectBottom = bottom - padding
-        val rectTop: Float = rectBottom - ChartUtils.getTextHeight(labelTextPaint!!, text)
-        val baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 1f
-        canvas.drawText(text, startX, baseline, labelTextPaint!!)
+
+    private fun drawPaddingORNotPaddingATLabelText(canvas: Canvas, left: Float, bottom: Float, text: String, isPadding: Boolean) {
+        val padding: Int
+        val fontMetrics: Paint.FontMetricsInt
+        val startX: Float
+        val rectBottom: Float
+        val rectTop: Float
+        val baseline: Float
+        if(isPadding) {
+            padding = ChartUtils.dp2px(density, gridLabelNameSp)
+            fontMetrics = labelTextPaint.getFontMetricsInt()
+            startX = left + padding
+            rectBottom = bottom - padding
+            rectTop = rectBottom - ChartUtils.getTextHeight(labelTextPaint, text)
+            baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 1f
+        } else {
+            fontMetrics = labelTextPaint.getFontMetricsInt()
+            startX = left
+            rectBottom = bottom
+            rectTop = rectBottom - ChartUtils.getTextHeight(labelTextPaint, text)
+            baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 1f
+        }
+        canvas.drawText(text, startX, baseline, labelTextPaint)
     }
 
-    private fun drawLabelNoPaddingText(canvas: Canvas, left: Float, bottom: Float, text: String) {
-        val fontMetrics: Paint.FontMetricsInt = labelTextPaint!!.getFontMetricsInt()
-        val startX = left
-        val rectBottom = bottom
-        val rectTop: Float = rectBottom - ChartUtils.getTextHeight(labelTextPaint!!, text)
-        val baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 1f
-        canvas.drawText(text, startX, baseline, labelTextPaint!!)
-    }
-
-    private fun drawLabelUnit(canvas: Canvas, left: Float, bottom: Float, text: String) {
-        val padding: Int = ChartUtils.dp2px(mDensity, gridLabelNameSp)
-        val fontMetrics: Paint.FontMetricsInt = labelUnitTextPaint!!.getFontMetricsInt()
-        val startX = left + padding
-        val rectBottom = bottom - padding
-        val rectTop: Float = rectBottom - ChartUtils.getTextHeight(labelUnitTextPaint!!, text)
-        val baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 2f
-        canvas.drawText(text, startX, baseline, labelUnitTextPaint!!)
-    }
-
-    private fun drawLabelNoPaddingUnit(canvas: Canvas, left: Float, bottom: Float, text: String) {
-        val fontMetrics: Paint.FontMetricsInt = labelUnitTextPaint!!.getFontMetricsInt()
-        val startX = left
-        val rectBottom = bottom
-        val rectTop: Float = rectBottom - ChartUtils.getTextHeight(labelUnitTextPaint!!, text)
-        val baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 2f
-        canvas.drawText(text, startX, baseline, labelUnitTextPaint!!)
+    private fun drawPaddingORNotPaddingATLabelUnit(canvas: Canvas, left: Float, bottom: Float, text: String, isPadding:Boolean) {
+        val padding: Int
+        val fontMetrics: Paint.FontMetricsInt
+        val startX: Float
+        val rectBottom: Float
+        val rectTop: Float
+        val baseline: Float
+        if(isPadding) {
+            padding = ChartUtils.dp2px(density, gridLabelNameSp)
+            fontMetrics = labelUnitTextPaint.getFontMetricsInt()
+            startX = left + padding
+            rectBottom = bottom - padding
+            rectTop = rectBottom - ChartUtils.getTextHeight(labelUnitTextPaint, text)
+            baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 2f
+        } else {
+            fontMetrics = labelUnitTextPaint.getFontMetricsInt()
+            startX = left
+            rectBottom = bottom
+            rectTop = rectBottom - ChartUtils.getTextHeight(labelUnitTextPaint, text)
+            baseline = (rectBottom + rectTop - fontMetrics.bottom - fontMetrics.top) / 2f
+        }
+        canvas.drawText(text, startX, baseline, labelUnitTextPaint)
     }
 
     private fun initPaint(canvas: Canvas, type: Int) {
@@ -411,44 +412,44 @@ class StaticECGBackgroundRenderer(context: Context,
          * https://codejzy.com/posts-859534.html
          * https://stackoverflow.com/questions/11622773/android-line-width-pixel-size
          */
-        var relation = Math.sqrt((canvas.width * canvas.height).toDouble())
+        var relation = sqrt((canvas.width * canvas.height).toDouble())
         //        Log.d(TAG, "initPaint canvas relation: " + relation);
-        relation = relation / 250
+        relation /= 250
         //        Log.d(TAG, "initPaint canvas relation: " + relation);
         rowPaint = Paint()
-        rowPaint!!.color = GRAY_ROW_COLOR
-        rowPaint!!.strokeWidth = TypedValue.applyDimension(
+        rowPaint.color = GRAY_ROW_COLOR
+        rowPaint.strokeWidth = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             0.9f,
-            mDisplayMetrics
+            displayMetrics
         )
-        rowPaint!!.isAntiAlias = false
-        rowPaint!!.style = Paint.Style.STROKE
+        rowPaint.isAntiAlias = false
+        rowPaint.style = Paint.Style.STROKE
 
         cellPaint = Paint()
-        cellPaint!!.color = GRAY_CELL_COLOR
-        cellPaint!!.strokeWidth = TypedValue.applyDimension(
+        cellPaint.color = GRAY_CELL_COLOR
+        cellPaint.strokeWidth = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             0.5f,
-            mDisplayMetrics
+            displayMetrics
         )
-        cellPaint!!.isAntiAlias = false
-        cellPaint!!.style = Paint.Style.STROKE
+        cellPaint.isAntiAlias = false
+        cellPaint.style = Paint.Style.STROKE
 
         pointPaint = Paint()
-        pointPaint!!.color = GRAY_POINT_COLOR
-        pointPaint!!.strokeWidth = (0.2 * relation).toFloat()
-        pointPaint!!.isAntiAlias = false
-        pointPaint!!.style = Paint.Style.STROKE
+        pointPaint.color = GRAY_POINT_COLOR
+        pointPaint.strokeWidth = (0.2 * relation).toFloat()
+        pointPaint.isAntiAlias = false
+        pointPaint.style = Paint.Style.STROKE
 
         labelLeadPaint = Paint()
-        labelLeadPaint!!.isAntiAlias = false
+        labelLeadPaint.isAntiAlias = false
         if (type == 0) {
-            labelLeadPaint!!.color = BLACK_LABEL_LEAD_COLOR
+            labelLeadPaint.color = BLACK_LABEL_LEAD_COLOR
         } else {
-            labelLeadPaint!!.color = GREEN_LABEL_LEAD_COLOR
+            labelLeadPaint.color = GREEN_LABEL_LEAD_COLOR
         }
-        labelLeadPaint!!.strokeWidth = ChartUtils.dip2px(mDisplayMetrics, 1f)
+        labelLeadPaint.strokeWidth = ChartUtils.dip2px(displayMetrics, 1f)
 
         when(ecgFormatTypeTag) {
             KEY_ECG_VIEW_ONE_TWELVE_TAG -> {
@@ -470,31 +471,31 @@ class StaticECGBackgroundRenderer(context: Context,
         }
 
         labelTextPaint = Paint()
-        labelTextPaint!!.isAntiAlias = false
-        labelTextPaint!!.style = Paint.Style.FILL
-        labelTextPaint!!.strokeCap = Paint.Cap.ROUND
-        labelTextPaint!!.textSize = (leadNameTextSP * relation).toFloat()
+        labelTextPaint.isAntiAlias = false
+        labelTextPaint.style = Paint.Style.FILL
+        labelTextPaint.strokeCap = Paint.Cap.ROUND
+        labelTextPaint.textSize = (leadNameTextSP * relation).toFloat()
         if (type == 0) {
-            labelTextPaint!!.color = BLACK_LABEL_LEAD_TEXT_COLOR
+            labelTextPaint.color = BLACK_LABEL_LEAD_TEXT_COLOR
         } else {
-            labelTextPaint!!.color = WHITE_LABEL_LEAD_TEXT_COLOR
+            labelTextPaint.color = WHITE_LABEL_LEAD_TEXT_COLOR
         }
-        labelTextPaint!!.typeface = Typeface.create(
+        labelTextPaint.typeface = Typeface.create(
             Typeface.DEFAULT,
             Typeface.BOLD
         )
 
         labelUnitTextPaint = Paint()
-        labelUnitTextPaint!!.isAntiAlias = false
-        labelUnitTextPaint!!.style = Paint.Style.FILL
-        labelUnitTextPaint!!.strokeCap = Paint.Cap.ROUND
-        labelUnitTextPaint!!.textSize = (leadUnitTextSP * relation).toFloat()
+        labelUnitTextPaint.isAntiAlias = false
+        labelUnitTextPaint.style = Paint.Style.FILL
+        labelUnitTextPaint.strokeCap = Paint.Cap.ROUND
+        labelUnitTextPaint.textSize = (leadUnitTextSP * relation).toFloat()
         if (type == 0) {
-            labelUnitTextPaint!!.color = BLACK_LABEL_LEAD_UNIT_TEXT_COLOR
+            labelUnitTextPaint.color = BLACK_LABEL_LEAD_UNIT_TEXT_COLOR
         } else {
-            labelUnitTextPaint!!.color = GREEN_LABEL_LEAD_UNIT_TEXT_COLOR
+            labelUnitTextPaint.color = GREEN_LABEL_LEAD_UNIT_TEXT_COLOR
         }
-        labelUnitTextPaint!!.typeface = Typeface.create(
+        labelUnitTextPaint.typeface = Typeface.create(
             Typeface.DEFAULT,
             Typeface.BOLD
         )
@@ -546,9 +547,9 @@ class StaticECGBackgroundRenderer(context: Context,
             2 -> ecgFormatTypeTag = KEY_ECG_VIEW_FOUR_THREE_TAG
             3 -> ecgFormatTypeTag = KEY_ECG_VIEW_FOUR_THREE_FOCUS_TAG
         }
-        this.ORIENTATION = orientation
-        mDisplayMetrics = context.resources.displayMetrics
-        mDensity = mDisplayMetrics.density
-        mScaleDensity = mDisplayMetrics.scaledDensity
+        this.orientation = orientation
+        displayMetrics = context.resources.displayMetrics
+        density = displayMetrics.density
+        scaleDensity = displayMetrics.scaledDensity
     }
 }

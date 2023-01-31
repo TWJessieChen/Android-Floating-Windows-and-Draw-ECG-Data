@@ -1,5 +1,6 @@
 package com.jc666.floatingwindowexample.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -7,37 +8,43 @@ import android.util.Log
 import android.view.View
 import com.jc666.floatingwindowexample.R
 
-
+/**
+ * @author JC666
+ * @date 2022/03/01
+ * @describe
+ *
+ *
+ */
 class StaticECGBackgroundView : View {
     private val TAG = StaticECGBackgroundView::class.java.simpleName
 
     //紀錄畫筆顏色Type，0:白色(黑色波形) 1:黑色(綠色波形)
-    private val BACKGROUND_BLACK_COLOR = Color.parseColor("#ff202123") //黑色
-    private val BACKGROUND_WHITE_COLOR = Color.parseColor("#ffffffff") //白色
+    private val backgroundBlackColor = Color.parseColor("#ff202123") //黑色
+    private val backgroundWhiteColor = Color.parseColor("#ffffffff") //白色
 
-    private var mStaticECGBackgroundRenderer: StaticECGBackgroundRenderer? = null
+    private lateinit var mStaticECGBackgroundRenderer: StaticECGBackgroundRenderer
 
-    private var BACKGROUND_TEXT_PADDING_STATUS = 0 //預設不需要字串位移
+    private var backgroundTextPaddingStatus = 0 //預設不需要字串位移
 
-    private var BACKGROUND_TEXT_SP = 2 //預設8sp字體大小
+    private var backgroundTextSP = 2 //預設8sp字體大小
 
-    private var BACKGROUND_SMALL_GRID_STATUS = 1 //預設開啟小網格
+    private var backgroundSmallGridStatus = 1 //預設開啟小網格
 
-    private var BACKGROUND_DRAW_MODE = 0
+    private var backgroundDrawMode = 0
 
-    private var GAIN = 0
+    private var gainValue = 0
 
-    private var LEAD_NMAE = ""
+    private var leadName = ""
 
-    private var ecgBackgroundBitmap: Bitmap? = null
+    private lateinit var ecgBackgroundBitmap: Bitmap
 
-    private var ecgBackgroundCanvas: Canvas? = null
+    private lateinit var ecgBackgroundCanvas: Canvas
 
-    private var mRenderPaint: Paint? = null
+    private lateinit var mRenderPaint: Paint
 
-    private var ECG_FORMAT_TYPE = 0
+    private var ecgFormatType = 0
 
-    private var ORIENTATION: Int = 2
+    private var orientation: Int = 2
 
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
         init(attrs)
@@ -57,33 +64,33 @@ class StaticECGBackgroundView : View {
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, R.styleable.StaticEcgView)
             if (a.hasValue(R.styleable.StaticEcgView_background_text_padding)) {
-                BACKGROUND_TEXT_PADDING_STATUS = a.getInt(R.styleable.StaticEcgView_background_text_padding, 0)
+                backgroundTextPaddingStatus = a.getInt(R.styleable.StaticEcgView_background_text_padding, 0)
             }
             if (a.hasValue(R.styleable.StaticEcgView_background_text_sp)) {
-                BACKGROUND_TEXT_SP = a.getInt(R.styleable.StaticEcgView_background_text_sp, 2)
+                backgroundTextSP = a.getInt(R.styleable.StaticEcgView_background_text_sp, 2)
             }
             if (a.hasValue(R.styleable.StaticEcgView_background_small_grid_enable)) {
-                BACKGROUND_SMALL_GRID_STATUS = a.getInt(R.styleable.StaticEcgView_background_small_grid_enable, 1)
+                backgroundSmallGridStatus = a.getInt(R.styleable.StaticEcgView_background_small_grid_enable, 1)
             }
             if (a.hasValue(R.styleable.StaticEcgView_background_draw_mode)) {
-                BACKGROUND_DRAW_MODE = a.getInt(R.styleable.StaticEcgView_background_draw_mode, 0)
+                backgroundDrawMode = a.getInt(R.styleable.StaticEcgView_background_draw_mode, 0)
             }
             if (a.hasValue(R.styleable.StaticEcgView_gain)) {
-                GAIN = a.getInt(R.styleable.StaticEcgView_gain, 0)
+                gainValue = a.getInt(R.styleable.StaticEcgView_gain, 0)
             }
             if (a.hasValue(R.styleable.StaticEcgView_lead_name)) {
-                LEAD_NMAE = a.getString(R.styleable.StaticEcgView_lead_name).toString()
+                leadName = a.getString(R.styleable.StaticEcgView_lead_name).toString()
             }
             if (a.hasValue(R.styleable.StaticEcgView_wave_ecg_format)) {
-                ECG_FORMAT_TYPE = a.getInt(R.styleable.StaticEcgView_wave_ecg_format, 0)
+                ecgFormatType = a.getInt(R.styleable.StaticEcgView_wave_ecg_format, 0)
             }
             if (a.hasValue(R.styleable.StaticEcgView_wave_ecg_orientation)) {
-                ORIENTATION = a.getInt(R.styleable.StaticEcgView_wave_ecg_orientation, 2)
+                orientation = a.getInt(R.styleable.StaticEcgView_wave_ecg_orientation, 2)
             }
         }
         ecgBackgroundCanvas = Canvas()
         mRenderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        mRenderPaint!!.setStyle(Paint.Style.FILL)
+        mRenderPaint.setStyle(Paint.Style.FILL)
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -91,60 +98,49 @@ class StaticECGBackgroundView : View {
 
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if(this.mStaticECGBackgroundRenderer != null) {
-            this.mStaticECGBackgroundRenderer = null
-        }
         this.mStaticECGBackgroundRenderer = StaticECGBackgroundRenderer(context,
             measuredWidth,
             measuredHeight,
-            BACKGROUND_DRAW_MODE,
-            LEAD_NMAE,
-            GAIN,
-            BACKGROUND_SMALL_GRID_STATUS,
-            BACKGROUND_TEXT_SP,
-            BACKGROUND_TEXT_PADDING_STATUS,
-            ECG_FORMAT_TYPE,
-            ORIENTATION)
+            backgroundDrawMode,
+            leadName,
+            gainValue,
+            backgroundSmallGridStatus,
+            backgroundTextSP,
+            backgroundTextPaddingStatus,
+            ecgFormatType,
+            orientation)
 
-        if(ecgBackgroundBitmap == null) {
-            ecgBackgroundBitmap = Bitmap.createBitmap(
-                measuredWidth,
-                measuredHeight, Bitmap.Config.ARGB_8888
-            )
-        }
+        ecgBackgroundBitmap = Bitmap.createBitmap(
+            measuredWidth,
+            measuredHeight, Bitmap.Config.ARGB_8888
+        )
 
-        ecgBackgroundBitmap!!.eraseColor(Color.TRANSPARENT)
+        ecgBackgroundBitmap.eraseColor(Color.TRANSPARENT)
 
-        ecgBackgroundCanvas!!.setBitmap(ecgBackgroundBitmap)
-        ecgBackgroundCanvas!!.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        ecgBackgroundCanvas.setBitmap(ecgBackgroundBitmap)
+        ecgBackgroundCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-        if(BACKGROUND_DRAW_MODE == 0) {
-            ecgBackgroundCanvas!!.drawColor(BACKGROUND_WHITE_COLOR)
+        if(backgroundDrawMode == 0) {
+            ecgBackgroundCanvas.drawColor(backgroundWhiteColor)
         } else {
-            ecgBackgroundCanvas!!.drawColor(BACKGROUND_BLACK_COLOR)
+            ecgBackgroundCanvas.drawColor(backgroundBlackColor)
         }
 
-        mStaticECGBackgroundRenderer!!.draw(ecgBackgroundCanvas!!)
+        mStaticECGBackgroundRenderer.draw(ecgBackgroundCanvas)
 
-        canvas.drawBitmap(ecgBackgroundBitmap!!, 0f, 0f, mRenderPaint)
+        canvas.drawBitmap(ecgBackgroundBitmap, 0f, 0f, mRenderPaint)
     }
 
     override fun onDetachedFromWindow() {
         Log.d(TAG, "onDetachedFromWindow")
         // releases the bitmap in the renderer to avoid oom error
-        if (mStaticECGBackgroundRenderer != null && mStaticECGBackgroundRenderer is StaticECGBackgroundRenderer) {
-            if (ecgBackgroundCanvas != null) {
-                ecgBackgroundCanvas!!.setBitmap(null)
-                ecgBackgroundCanvas = null
-            }
-            if (ecgBackgroundBitmap != null) {
-                if (ecgBackgroundBitmap != null) {
-                    ecgBackgroundBitmap!!.recycle()
-                }
-            }
+        if (mStaticECGBackgroundRenderer is StaticECGBackgroundRenderer) {
+            ecgBackgroundCanvas.setBitmap(null)
+            ecgBackgroundBitmap.recycle()
         }
         super.onDetachedFromWindow()
     }
@@ -157,46 +153,46 @@ class StaticECGBackgroundView : View {
      * _gain : 設定 0.5F -> GAIN_I:0, 1F -> GAIN_II:1, 2F -> GAIN_III:2, 4F -> GAIN_IV:3
      */
     fun setBackgroundParams(background: Int, _gain: Float) {
-        this.BACKGROUND_DRAW_MODE = background
+        this.backgroundDrawMode = background
         when (_gain) {
             0.5F -> {
-                this.GAIN = 0
+                this.gainValue = 0
             }
             1F -> {
-                this.GAIN = 1
+                this.gainValue = 1
             }
             2F -> {
-                this.GAIN = 2
+                this.gainValue = 2
             }
             4F -> {
-                this.GAIN = 3
+                this.gainValue = 3
             }
         }
         invalidate()
     }
 
     fun updateLeadName(leadName: String) {
-        this.LEAD_NMAE = leadName
+        this.leadName = leadName
         invalidate()
     }
 
     fun updateLeadNameAndBackgroundParams(background: Int, _gain: Float, leadName: String) {
-        this.BACKGROUND_DRAW_MODE = background
+        this.backgroundDrawMode = background
         when (_gain) {
             0.5F -> {
-                this.GAIN = 0
+                this.gainValue = 0
             }
             1F -> {
-                this.GAIN = 1
+                this.gainValue = 1
             }
             2F -> {
-                this.GAIN = 2
+                this.gainValue = 2
             }
             4F -> {
-                this.GAIN = 3
+                this.gainValue = 3
             }
         }
-        this.LEAD_NMAE = leadName
+        this.leadName = leadName
         invalidate()
     }
 }

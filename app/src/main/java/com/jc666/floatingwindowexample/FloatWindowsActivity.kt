@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.IBinder
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.Button

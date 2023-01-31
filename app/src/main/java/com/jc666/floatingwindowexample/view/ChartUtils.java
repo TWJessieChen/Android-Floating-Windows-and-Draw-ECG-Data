@@ -18,7 +18,6 @@ import androidx.annotation.NonNull;
  * @describe TODO
  */
 public final class ChartUtils {
-
     public static final float CONTAIN_OFFSET = 5;//范围坐标判断偏移量
 
     /**

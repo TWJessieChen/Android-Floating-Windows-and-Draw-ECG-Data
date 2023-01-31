@@ -1,5 +1,6 @@
 package com.jc666.floatingwindowexample.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -7,13 +8,19 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.util.AttributeSet
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.View
 import com.jc666.floatingwindowexample.R
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class DynamicWaveEcgView : View {
+/**
+ * @author JC666
+ * @date 2022/03/01
+ * @describe
+ *
+ *
+ */
+open class DynamicWaveEcgView : View {
     private val TAG = DynamicWaveEcgView::class.java.simpleName
 
     private var refreshUITask: TimerTask? = null
@@ -21,11 +28,11 @@ class DynamicWaveEcgView : View {
     //隨意給個超大值，當作定義值
     private val DEFAULT_INITIAL_VALUE = 9999999999999999.99999999999999999
 
-    protected var mDensity = 0f
+    private var mDensity = 0f
 
-    protected var mScaleDensity = 0f
+    private var mScaleDensity = 0f
 
-    protected var mDisplayMetrics: DisplayMetrics? = null
+    private lateinit var mDisplayMetrics: DisplayMetrics
 
     /**
      * 宽高
@@ -36,16 +43,16 @@ class DynamicWaveEcgView : View {
     /**
      * 数据线画笔
      */
-    private var mWavePaint: Paint? = null
+    private lateinit var mWavePaint: Paint
 
-    private var peakPaint: Paint? = null
+    private lateinit var peakPaint: Paint
 
     /**
      * 線條的路徑
      */
-    private var mPathHead: Path? = null
+    private lateinit var mPathHead: Path
 
-    private var mPathEnd: Path? = null
+    private lateinit var mPathEnd: Path
 
     /**
      * 保存已绘制的数据坐标
@@ -63,7 +70,7 @@ class DynamicWaveEcgView : View {
     /**
      * 线条粗细
      */
-    private var WAVE_LINE_STROKE_WIDTH = 1f
+    private var waveLineStrokeWidth = 1f
 
     /**
      * 当前的x，y坐标
@@ -73,7 +80,7 @@ class DynamicWaveEcgView : View {
     /**
      * 线条的长度，可用于控制横坐标4.9F
      */
-    private var WAVE_LINE_WIDTH_RATE = 0.0F
+    private var waveLineWidthRate = 0.0F
 
     private var ecgFormat = 0
 
@@ -94,7 +101,7 @@ class DynamicWaveEcgView : View {
     /**
      * 大網格寬高(這個需要跟繪圖背景網格大小同步才行)，換算GAIN值很重要的數據
      */
-    private var BIG_GRID_WIDTH = 30
+    private var bigGridWidth = 30
 
     private var twoGridLength = 0f
 
@@ -155,26 +162,26 @@ class DynamicWaveEcgView : View {
         }
 
         mDisplayMetrics = context.getResources().getDisplayMetrics()
-        mDensity = mDisplayMetrics!!.density
-        mScaleDensity = mDisplayMetrics!!.scaledDensity
+        mDensity = mDisplayMetrics.density
+        mScaleDensity = mDisplayMetrics.scaledDensity
         //Log.d(TAG,"mScaleDensity: " + mScaleDensity + " mDensity: " + mDensity + " mDisplayMetrics: " + mDisplayMetrics)
 
         /** ECG Wave paint */
         mWavePaint = Paint()
-        mWavePaint!!.style = Paint.Style.STROKE
-        mWavePaint!!.strokeCap = Paint.Cap.ROUND
-        mWavePaint!!.color = GREEN_LEAD_LINE_COLOR
-        mWavePaint!!.strokeWidth = WAVE_LINE_STROKE_WIDTH
+        mWavePaint.style = Paint.Style.STROKE
+        mWavePaint.strokeCap = Paint.Cap.ROUND
+        mWavePaint.color = GREEN_LEAD_LINE_COLOR
+        mWavePaint.strokeWidth = waveLineStrokeWidth
         /** 抗锯齿效果 */
-        mWavePaint!!.isAntiAlias = true
+        mWavePaint.isAntiAlias = true
 
         /** Pacemaker peak  paint */
         peakPaint = Paint()
-        peakPaint!!.isAntiAlias = true
-        peakPaint!!.style = Paint.Style.FILL
-        peakPaint!!.strokeCap = Paint.Cap.ROUND
-        peakPaint!!.textSize = ChartUtils.sp2px(mScaleDensity, 20f).toFloat()
-        peakPaint!!.color = Color.parseColor("#ffea5243")
+        peakPaint.isAntiAlias = true
+        peakPaint.style = Paint.Style.FILL
+        peakPaint.strokeCap = Paint.Cap.ROUND
+        peakPaint.textSize = ChartUtils.sp2px(mScaleDensity, 20f).toFloat()
+        peakPaint.color = Color.parseColor("#ffea5243")
 
         /** ECG 軌跡座標  paint */
         mPathHead = Path()
@@ -183,13 +190,14 @@ class DynamicWaveEcgView : View {
 
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         /** 获取控件的宽高 */
         mWidth = measuredWidth.toFloat()
         mHeight = measuredHeight.toFloat()
         baseLine = mHeight/2
-        twoGridLength = (BIG_GRID_WIDTH*2).toFloat()
+        twoGridLength = (bigGridWidth*2).toFloat()
         //Log.d(TAG,"twoGridLength: " + twoGridLength + " mHeight: " +  mHeight)
         //Log.d(TAG,"mHeight/mScaleDensity: " + (mHeight/mScaleDensity))
 
@@ -200,7 +208,7 @@ class DynamicWaveEcgView : View {
                 pacemakerDataArray = BooleanArray(5000)
                 needPacemakerDataArray = BooleanArray(5000)
                 drawArray = DoubleArray(5000)
-                WAVE_LINE_WIDTH_RATE = mWidth/5000
+                waveLineWidthRate = mWidth/5000
                 row = 5000
             }
             1 -> {
@@ -208,7 +216,7 @@ class DynamicWaveEcgView : View {
                 pacemakerDataArray = BooleanArray(2500)
                 needPacemakerDataArray = BooleanArray(2500)
                 drawArray = DoubleArray(2500)
-                WAVE_LINE_WIDTH_RATE = mWidth/2500
+                waveLineWidthRate = mWidth/2500
                 row = 2500
             }
             2 -> {
@@ -216,12 +224,10 @@ class DynamicWaveEcgView : View {
                 pacemakerDataArray = BooleanArray(1250)
                 needPacemakerDataArray = BooleanArray(1250)
                 drawArray = DoubleArray(1250)
-                WAVE_LINE_WIDTH_RATE = mWidth/1250
+                waveLineWidthRate = mWidth/1250
                 row = 1250
             }
         }
-
-//        Log.d(TAG,"WAVE_LINE_WIDTH_RATE: " + WAVE_LINE_WIDTH_RATE + " mWidth: " + mWidth + " ecgFormat: " + ecgFormat)
 
     }
 
@@ -245,15 +251,15 @@ class DynamicWaveEcgView : View {
         super.onDraw(canvas)
 //        Log.d(TAG,"onDraw")
         if(!isLeadOFF) {
-            canvas.drawPath(mPathHead!!, mWavePaint!!)
+            canvas.drawPath(mPathHead, mWavePaint)
             if(!isFirstRun) {
-                canvas.drawPath(mPathEnd!!, mWavePaint!!)
+                canvas.drawPath(mPathEnd, mWavePaint)
             }
             for(i in 0 until needPacemakerDataArray.size) {
                 if(needPacemakerDataArray[i] == true) {
                     canvas.drawLine(
-                        (i * WAVE_LINE_WIDTH_RATE), 0f,
-                        ((i + 1) * WAVE_LINE_WIDTH_RATE), baseLine, peakPaint!!
+                        (i * waveLineWidthRate), 0f,
+                        ((i + 1) * waveLineWidthRate), baseLine, peakPaint
                     )
                 }
             }
@@ -271,11 +277,11 @@ class DynamicWaveEcgView : View {
         path.reset()
         startECGData = (drawArray[start] * gainValue).toFloat()
         startY = (baseLine - (startECGData * twoGridLength))
-        path.moveTo((start * WAVE_LINE_WIDTH_RATE), startY)
+        path.moveTo((start * waveLineWidthRate), startY)
         //Log.d(TAG,"baseLine: " + baseLine + " startY: " + startY)
         for (i in (start + 1) until (end)) {
             path.lineTo(
-                (i * WAVE_LINE_WIDTH_RATE),
+                (i * waveLineWidthRate),
                 baseLine - ((drawArray[i] * gainValue) * twoGridLength).toFloat()
             )
         }
@@ -292,11 +298,11 @@ class DynamicWaveEcgView : View {
     private fun drawPathFromDataHead(start: Int, end: Int, path: Path) {
         startECGData = (drawArray[start] * gainValue).toFloat()
         startY = (baseLine - (startECGData * twoGridLength))
-        path.lineTo((start * WAVE_LINE_WIDTH_RATE), startY)
+        path.lineTo((start * waveLineWidthRate), startY)
         //Log.d(TAG,"baseLine: " + baseLine + " startY: " + startY)
         for (i in (start + 1) until (end)) {
             path.lineTo(
-                (i * WAVE_LINE_WIDTH_RATE),
+                (i * waveLineWidthRate),
                 baseLine - ((drawArray[i] * gainValue) * twoGridLength).toFloat()
             )
         }
@@ -309,7 +315,7 @@ class DynamicWaveEcgView : View {
         drawPathFromData(
             if (row - 1 - draw_index > 100) 102 else 100 - (row - 1 - draw_index),
             draw_index,
-            mPathHead!!
+            mPathHead
         )
 
         /**
@@ -317,10 +323,10 @@ class DynamicWaveEcgView : View {
          * */
         if(!isFirstRun) {
             drawPathFromData(Math.min(draw_index + 100, row - 1), row - 1,
-                mPathEnd!!)
+                mPathEnd)
         }
 
-        for(i in 0 until pacemakerDataArray.size) {
+        for(i in pacemakerDataArray.indices) {
             needPacemakerDataArray[i] = pacemakerDataArray[i]
         }
     }
@@ -356,14 +362,14 @@ class DynamicWaveEcgView : View {
             drawPathFromData(
                 0,
                 drawIndexValue,
-                mPathHead!!
+                mPathHead
             )
             isCircleRun = false
         } else {
             drawPathFromDataHead(
                 drawRecordIndexValue,
                 drawIndexValue,
-                mPathHead!!
+                mPathHead
             )
         }
 
@@ -372,7 +378,7 @@ class DynamicWaveEcgView : View {
          * */
         if(!isFirstRun) {
             drawPathFromData(Math.min(drawIndexValue + drawHeadIntervalTailValue, row - 1), row - 1,
-                mPathEnd!!)
+                mPathEnd)
         }
 
     }
@@ -407,14 +413,14 @@ class DynamicWaveEcgView : View {
             drawPathFromData(
                 0,
                 drawIndexValue,
-                mPathHead!!
+                mPathHead
             )
             isCircleRun = false
         } else {
             drawPathFromDataHead(
                 drawRecordIndexValue,
                 drawIndexValue,
-                mPathHead!!
+                mPathHead
             )
         }
 
@@ -423,19 +429,9 @@ class DynamicWaveEcgView : View {
          * */
         if(!isFirstRun) {
             drawPathFromData(Math.min(drawIndexValue + drawHeadIntervalTailValue, row - 1), row - 1,
-                mPathEnd!!)
+                mPathEnd)
         }
 
-    }
-
-    /**
-     * 指定靜指狀態換Gain
-     */
-    fun changeGainShowLineForStatic(gainValue:Float) {
-        this.gainValue = gainValue
-        refreshECGDataUI()
-        postInvalidate()
-        //invalidate()
     }
 
     /**
@@ -444,28 +440,24 @@ class DynamicWaveEcgView : View {
     fun updateECGData(line: Double, isPacemaker: Boolean, gainValue:Float, isLeadOFF:Boolean) {
 //        Log.d(TAG,"showLine: " + line)
         if(readyDrawECGData.compareAndSet(false,true)) {
-            mPathHead!!.reset()
-            mPathEnd!!.reset()
+            mPathHead.reset()
+            mPathEnd.reset()
         }
         this.isLeadOFF = isLeadOFF
         if(this.gainValue != gainValue) {
             this.gainValue = gainValue
         }
         if(isLeadOFF) {
-            if(recordLeadOffHistory == false) {
+            if(!recordLeadOffHistory) {
                 recordLeadOffHistory = true
-                if(dataArray != null) {
-                    for (i in dataArray.indices) {
-                        dataArray[i] = DEFAULT_INITIAL_VALUE
-                    }
+                for (i in dataArray.indices) {
+                    dataArray[i] = DEFAULT_INITIAL_VALUE
                 }
-                if(pacemakerDataArray != null) {
-                    for (i in pacemakerDataArray.indices) {
-                        pacemakerDataArray[i] = false
-                    }
+                for (i in pacemakerDataArray.indices) {
+                    pacemakerDataArray[i] = false
                 }
-                mPathHead!!.reset()
-                mPathEnd!!.reset()
+                mPathHead.reset()
+                mPathEnd.reset()
             }
 
             recordLeadOffHistoryIndex = draw_index
@@ -510,20 +502,14 @@ class DynamicWaveEcgView : View {
         draw_index = 0
         drawIndexValue = 0
         drawRecordIndexValue = 0
-        if(dataArray != null) {
-            for (i in dataArray.indices) {
-                dataArray[i] = DEFAULT_INITIAL_VALUE
-            }
+        for (i in dataArray.indices) {
+            dataArray[i] = DEFAULT_INITIAL_VALUE
         }
-        if(drawArray != null) {
-            for (i in drawArray.indices) {
-                drawArray[i] = DEFAULT_INITIAL_VALUE
-            }
+        for (i in drawArray.indices) {
+            drawArray[i] = DEFAULT_INITIAL_VALUE
         }
-        if(pacemakerDataArray != null) {
-            for (i in pacemakerDataArray.indices) {
-                pacemakerDataArray[i] = false
-            }
+        for (i in pacemakerDataArray.indices) {
+            pacemakerDataArray[i] = false
         }
         refreshECGDataUI()
         //invalidate()
@@ -570,29 +556,24 @@ class DynamicWaveEcgView : View {
 
     fun setDrawLineColorType(type: Int) {
         if (type == 1) {
-            mWavePaint!!.color = GREEN_LEAD_LINE_COLOR
+            mWavePaint.color = GREEN_LEAD_LINE_COLOR
         } else {
-            mWavePaint!!.color = BLACK_LEAD_LINE_COLOR
+            mWavePaint.color = BLACK_LEAD_LINE_COLOR
         }
     }
 
     @Synchronized
     private fun startRefreshUITask() {
         if(refreshUITask == null) {
-//            Log.d(TAG,"startRefreshUITask")
-            //set a new Timer
             val timerInitData = Timer()
             initialDrawECGDataTimerTask()
-            //schedule the timer, after the first 1s the TimerTask will start run func.
             timerInitData.schedule(refreshUITask, drawRefresh.toLong())
         }
     }
 
     @Synchronized
     private fun stopRefreshUITask() {
-        //stop the timer, if it's not already null
         if (refreshUITask != null) {
-            //Log.d(TAG,"stopRefreshUITask")
             refreshUITask!!.cancel()
             refreshUITask = null
         }
